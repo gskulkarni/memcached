@@ -28,7 +28,6 @@ func TestRequestHeaderBuild(t *testing.T) {
         Magic:   0x80,
         KeyLen:  5,
         BodyLen: 5,
-        CAS:     make([]byte, 8),
       },
     },
     // TODO(sunil): Add more test cases

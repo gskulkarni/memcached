@@ -1,20 +1,20 @@
 package server
 
 import (
-	"github.com/stretchr/testify/assert"
-	"testing"
+  "github.com/stretchr/testify/assert"
+  "testing"
 )
 
 func TestDataStore(t *testing.T) {
 
-	ds := newDataStore()
+  ds := newDataStore()
 
-	err := ds.Set("k1", []byte("value1"))
-	assert.NoError(t, err)
+  err := ds.Set("k1", []byte("value1"), 0, 0, 0)
+  assert.NoError(t, err)
 
-	v, found := ds.Get("k1")
-	assert.True(t, found)
-	assert.Equal(t, v, []byte("value1"))
+  v, found := ds.Get("k1")
+  assert.True(t, found)
+  assert.Equal(t, v.value, []byte("value1"))
 
-	// TODO(Sunil): add more tests here
+  // TODO(Sunil): add more tests here
 }

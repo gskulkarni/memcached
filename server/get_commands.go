@@ -95,3 +95,26 @@ func (rsp *CmdGetResp) fillHeader(reqHdr *RequestHeader) {
   hdr.BodyLen = uint32(hdr.ExtrasLen) +
     uint32(len(rsp.Key)) + uint32(len(rsp.Value))
 }
+
+type CmdGetResp struct {
+  Header ResponseHeader
+  Flags  uint32
+  Key    []byte
+  Value  []byte
+}
+
+func (rsp *CmdGetResp) Write(w io.Writer) error {
+  if err := rsp.Header.encode(w); err != nil {
+    return nil
+  }
+  fields := []interface{}{&rsp.Flags}
+
+  if len(rsp.Key) > 0 {
+    fields = append(fields, rsp.Key)
+  }
+
+  if len(rsp.Value) > 0 {
+    fields = append(fields, rsp.Value)
+  }
+  return writeFields(w, fields...)
+}

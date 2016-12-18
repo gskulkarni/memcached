@@ -8,7 +8,7 @@ import (
 
 type reqTest struct {
   bytes  []byte
-  expReq *Request
+  expCmd *GetCmd
   err    error
 }
 
@@ -25,12 +25,11 @@ func TestRequestDecode(t *testing.T) {
         'H', 'e', 'l', 'l',
         'o',
       },
-      expReq: &Request{
-        Header: RequestHeader{
+      expCmd: &GetCmd{
+        Header: &RequestHeader{
           Magic:   0x80,
           KeyLen:  5,
           BodyLen: 5,
-          CAS:     make([]byte, 8),
         },
         Key: []byte("Hello"),
       },
@@ -39,9 +38,13 @@ func TestRequestDecode(t *testing.T) {
   }
 
   for _, tt := range tests {
-    req := &Request{}
-    err := req.decode(bytes.NewBuffer(tt.bytes))
+    r := bytes.NewBuffer(tt.bytes)
+    hdr := &RequestHeader{}
+    err := hdr.decode(r)
+    // cmd := &GetCmd{}
+    // err := cmd.Decode(r)
     assert.NoError(t, err)
-    assert.Equal(t, req, tt.expReq)
+    assert.Equal(t, hdr, tt.expCmd.Header)
+    // assert.Equal(t, cmd, tt.expCmd)
   }
 }

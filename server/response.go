@@ -30,56 +30,6 @@ type ResponseHeader struct {
   CAS       uint64
 }
 
-type CmdGetResp struct {
-  Header ResponseHeader
-  Flags  uint32
-  Key    []byte
-  Value  []byte
-}
-
-func (rsp *CmdGetResp) Write(w io.Writer) error {
-  if err := rsp.Header.encode(w); err != nil {
-    return nil
-  }
-  fields := []interface{}{&rsp.Flags}
-
-  if len(rsp.Key) > 0 {
-    fields = append(fields, rsp.Key)
-  }
-
-  if len(rsp.Value) > 0 {
-    fields = append(fields, rsp.Value)
-  }
-  return writeFields(w, fields...)
-}
-
-type CmdSetResp struct {
-  Header ResponseHeader
-  Extras []byte
-  Key    []byte
-  Value  []byte
-}
-
-func (rsp *CmdSetResp) Write(w io.Writer) error {
-  if err := rsp.Header.encode(w); err != nil {
-    return nil
-  }
-  fields := []interface{}{}
-
-  if rsp.Header.ExtrasLen > 0 {
-    fields = append(fields, rsp.Extras)
-  }
-
-  if len(rsp.Key) > 0 {
-    fields = append(fields, rsp.Key)
-  }
-
-  if len(rsp.Value) > 0 {
-    fields = append(fields, rsp.Value)
-  }
-  return writeFields(w, fields...)
-}
-
 func (hdr *ResponseHeader) encode(w io.Writer) error {
   hdrFields := []interface{}{
     &hdr.Magic, &hdr.Opcode, &hdr.KeyLen, &hdr.ExtrasLen, &hdr.DataType,
