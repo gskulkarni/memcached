@@ -165,10 +165,13 @@ func (cmd *GetCmd) Execute() (*Response, error) {
   item, found := s.ds.Get(key)
   if !found {
     glog.V(2).Infof("key: %s not found", key)
+    rsp.Header.Status = StatusKeyNotFound
+    rsp.Value = []byte("Item not found")
+  } else {
+    rsp.Value = item.value
+    rsp.Flags = item.flags
   }
   // glog.Infof("got get command:%+v for key: %s and found value: %v", req, key, v)
-  rsp.Value = item.value
-  rsp.Flags = item.flags
   rsp.fillHeader(cmd.Header)
   return rsp, nil
 }

@@ -8,7 +8,7 @@ import (
 // constants for Status code for response.
 const (
   StatusNoError       = 0x0000
-  StatusKeyError      = 0x0001
+  StatusKeyNotFound   = 0x0001
   StatusKeyExists     = 0x0002
   StatusValueTooLarge = 0x0003
   StatusInvalidArgs   = 0x0004
