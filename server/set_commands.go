@@ -79,7 +79,7 @@ func (cmd *SetCmd) Execute() (CommandRspWriter, error) {
   value := cmd.Value
   glog.Infof("got set command for key: %s value: %v header:%+v",
     key, value, cmd.Header)
-  err := s.ds.Set(key, value, cmd.Flags, cmd.Expiration, cmd.Header.CAS)
+  err := s.ds.set(key, value, cmd.Flags, cmd.Expiration, cmd.Header.CAS)
   if err != nil {
     glog.Errorf("error setting key value :: %v", err)
     return nil, err
@@ -106,7 +106,7 @@ type CmdSetResp struct {
 }
 
 func (rsp *CmdSetResp) Write(w io.Writer) error {
-  if err := rsp.Header.encode(w); err != nil {
+  if err := rsp.Header.write(w); err != nil {
     return nil
   }
   fields := []interface{}{}

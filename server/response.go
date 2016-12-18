@@ -30,7 +30,7 @@ type ResponseHeader struct {
   CAS       uint64
 }
 
-func (hdr *ResponseHeader) encode(w io.Writer) error {
+func (hdr *ResponseHeader) write(w io.Writer) error {
   hdrFields := []interface{}{
     &hdr.Magic, &hdr.Opcode, &hdr.KeyLen, &hdr.ExtrasLen, &hdr.DataType,
     &hdr.Status, &hdr.BodyLen, &hdr.Opaque, &hdr.CAS,

@@ -86,7 +86,7 @@ func (s *Server) handleCommand(rw io.ReadWriter) (CommandRspWriter, error) {
 
   hdr := &RequestHeader{}
   // read the request header
-  err := hdr.decode(rw)
+  err := hdr.read(rw)
   if err != nil {
     return nil, err
   }

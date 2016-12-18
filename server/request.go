@@ -25,7 +25,7 @@ type RequestHeader struct {
   CAS       uint64 // CAS for data version check
 }
 
-func (hdr *RequestHeader) decode(r io.Reader) error {
+func (hdr *RequestHeader) read(r io.Reader) error {
   hdrFields := []interface{}{
     &hdr.Magic, &hdr.Opcode, &hdr.KeyLen, &hdr.ExtrasLen, &hdr.DataType,
     &hdr.Reserved, &hdr.BodyLen, &hdr.Opaque, &hdr.CAS,
