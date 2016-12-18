@@ -1,15 +1,22 @@
-package main
+package server
 
 import (
   "sync"
 )
+
+type item struct {
+  value  []byte
+  expiry uint64
+  flags  uint32
+  cas    uint64
+}
 
 type dataStore struct {
   mu sync.RWMutex
   kv map[string][]byte
 }
 
-func NewDataStore() *dataStore {
+func newDataStore() *dataStore {
   return &dataStore{
     kv: make(map[string][]byte),
   }

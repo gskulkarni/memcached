@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
   "encoding/binary"
@@ -27,7 +27,7 @@ type ResponseHeader struct {
   Status    uint16
   BodyLen   uint32
   Opaque    uint32
-  CAS       []byte
+  CAS       uint64
 }
 
 type Response struct {
@@ -38,7 +38,6 @@ type Response struct {
 }
 
 func (hdr *ResponseHeader) encode(w io.Writer) error {
-  hdr.CAS = make([]byte, 8)
   hdrFields := []interface{}{
     &hdr.Magic, &hdr.Opcode, &hdr.KeyLen, &hdr.ExtrasLen, &hdr.DataType,
     &hdr.Status, &hdr.BodyLen, &hdr.Opaque, hdr.CAS,
