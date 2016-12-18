@@ -51,10 +51,6 @@ func (s *Server) serve() error {
   }
 }
 
-func (s *Server) Stop() {
-  // TODO(sunil): to be implemented
-}
-
 // TODO(sunil): this should take some context from the caller, so that caller
 // can signal for termination. That will be used in the event of the server
 // going down.
@@ -69,18 +65,6 @@ func (s *Server) serveConnection(conn net.Conn) {
       return
     }
   }
-}
-
-func (s *Server) getCommand(hdr *RequestHeader) (cmd Command, err error) {
-  switch hdr.Opcode {
-  case CmdGet:
-    cmd = &GetCmd{s: s, Header: hdr}
-  case CmdSet:
-    cmd = &SetCmd{s: s, Header: hdr}
-  default:
-    err = fmt.Errorf("invalid command")
-  }
-  return
 }
 
 // handleCommand serves given command. Error values indicate if the associated
@@ -128,4 +112,20 @@ func (s *Server) handleCommand(rw io.ReadWriter) (*Response, error) {
     return nil, err
   }
   return rsp, err
+}
+
+func (s *Server) getCommand(hdr *RequestHeader) (cmd Command, err error) {
+  switch hdr.Opcode {
+  case CmdGet:
+    cmd = &GetCmd{s: s, Header: hdr}
+  case CmdSet:
+    cmd = &SetCmd{s: s, Header: hdr}
+  default:
+    err = fmt.Errorf("invalid command")
+  }
+  return
+}
+
+func (s *Server) Stop() {
+  // TODO(sunil): to be implemented
 }
