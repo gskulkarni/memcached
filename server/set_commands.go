@@ -15,7 +15,7 @@ type SetCmd struct {
   Value      []byte
 }
 
-func (c *SetCmd) Decode(r io.Reader) error {
+func (c *SetCmd) Read(r io.Reader) error {
   var err error
   hdr := c.Header
 

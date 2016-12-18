@@ -7,9 +7,10 @@ import (
   "net"
 )
 
+// default address for Memcache server.
 const DefaultAddr = ":9090"
 
-// Server represents a Memcached server.
+// Server represents a Memcache server.
 type Server struct {
   addr string
   ln   net.Listener
@@ -96,7 +97,7 @@ func (s *Server) handleCommand(rw io.ReadWriter) (CommandRspWriter, error) {
     return nil, err
   }
 
-  err = cmd.Decode(rw)
+  err = cmd.Read(rw)
   if err != nil {
     return nil, err
   }

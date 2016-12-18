@@ -18,6 +18,7 @@ const (
   StatusOutOfMemory   = 0x0082
 )
 
+// ResponseHeader represent header for the response.
 type ResponseHeader struct {
   Magic     uint8
   Opcode    uint8
@@ -30,6 +31,7 @@ type ResponseHeader struct {
   CAS       uint64
 }
 
+// write writes the given response header on to the writer.
 func (hdr *ResponseHeader) write(w io.Writer) error {
   hdrFields := []interface{}{
     &hdr.Magic, &hdr.Opcode, &hdr.KeyLen, &hdr.ExtrasLen, &hdr.DataType,
