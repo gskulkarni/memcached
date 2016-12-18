@@ -25,18 +25,6 @@ type RequestHeader struct {
   CAS       uint64 // CAS for data version check
 }
 
-const (
-  CmdGet = 0x00
-  CmdSet = 0x01
-  // and rest of the codes....
-)
-
-type Command interface {
-  Decode(io.Reader) error
-  IsValid() (bool, string)
-  Execute() (*Response, error)
-}
-
 func (hdr *RequestHeader) decode(r io.Reader) error {
   hdrFields := []interface{}{
     &hdr.Magic, &hdr.Opcode, &hdr.KeyLen, &hdr.ExtrasLen, &hdr.DataType,
@@ -49,4 +37,16 @@ func (hdr *RequestHeader) decode(r io.Reader) error {
     }
   }
   return nil
+}
+
+const (
+  CmdGet = 0x00
+  CmdSet = 0x01
+  // and rest of the codes....
+)
+
+type Command interface {
+  Decode(io.Reader) error
+  IsValid() (bool, string)
+  Execute() (*Response, error)
 }

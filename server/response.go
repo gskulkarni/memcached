@@ -30,6 +30,34 @@ type ResponseHeader struct {
   CAS       uint64
 }
 
+// type CmdGetResp struct {
+//   Header ResponseHeader
+//   Flags  uint32
+//   Key    []byte
+//   Value  []byte
+// }
+
+// func (rsp *CmdGetResp) Write(w io.Writer) error {
+//   if err := rsp.Header.encode(w); err != nil {
+//     return nil
+//   }
+//   return writeFields(w, &rsp.Flags)
+// }
+
+// type CmdSetResp struct {
+//   Header ResponseHeader
+//   Extras []byte
+//   Key    []byte
+//   Value  []byte
+// }
+
+// func (rsp *CmdSetResp) Write(w io.Writer) error {
+//   if err := rsp.Header.encode(w); err != nil {
+//     return nil
+//   }
+//   return writeFields(w, rsp.Extras, rsp.Key, rsp.Value)
+// }
+
 type Response struct {
   Header ResponseHeader
   Flags  uint32
@@ -42,43 +70,36 @@ func (hdr *ResponseHeader) encode(w io.Writer) error {
     &hdr.Magic, &hdr.Opcode, &hdr.KeyLen, &hdr.ExtrasLen, &hdr.DataType,
     &hdr.Status, &hdr.BodyLen, &hdr.Opaque, &hdr.CAS,
   }
-
-  for _, field := range hdrFields {
-    if err := binary.Write(w, binary.BigEndian, field); err != nil {
-      return err
-    }
-  }
-  return nil
+  return writeFields(w, hdrFields...)
 }
 
 func (rsp *Response) encode(w io.Writer) error {
   var err error
   hdr := &rsp.Header
 
-  // TODO (sunil): perform len validation of various fields
-
   if err = hdr.encode(w); err != nil {
     return err
   }
 
+  fields := []interface{}{}
+
   if hdr.ExtrasLen > 0 {
-    err = binary.Write(w, binary.BigEndian, rsp.Flags)
-    if err != nil {
-      return err
-    }
+    fields = append(fields, &rsp.Flags)
   }
 
   if len(rsp.Key) > 0 {
-    err = binary.Write(w, binary.BigEndian, rsp.Key)
-    if err != nil {
-      return err
-    }
+    fields = append(fields, rsp.Key)
   }
 
-  //   rest := int(hdr.BodyLen) - int(hdr.KeyLen) - int(hdr.ExtrasLen)
   if len(rsp.Value) > 0 {
-    err = binary.Write(w, binary.BigEndian, rsp.Value)
-    if err != nil {
+    fields = append(fields, rsp.Value)
+  }
+  return writeFields(w, fields...)
+}
+
+func writeFields(w io.Writer, fields ...interface{}) error {
+  for _, f := range fields {
+    if err := binary.Write(w, binary.BigEndian, f); err != nil {
       return err
     }
   }
@@ -87,7 +108,7 @@ func (rsp *Response) encode(w io.Writer) error {
 
 func (rsp *Response) fillHeader(reqHdr *RequestHeader) error {
   hdr := &rsp.Header
-  hdr.Magic = 0x81
+  hdr.Magic = MagicCodeResponse
   hdr.Opaque = reqHdr.Opaque
   hdr.Opcode = reqHdr.Opcode
   hdr.KeyLen = uint16(len(rsp.Key))
