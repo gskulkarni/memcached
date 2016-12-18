@@ -40,7 +40,7 @@ type Response struct {
 func (hdr *ResponseHeader) encode(w io.Writer) error {
   hdrFields := []interface{}{
     &hdr.Magic, &hdr.Opcode, &hdr.KeyLen, &hdr.ExtrasLen, &hdr.DataType,
-    &hdr.Status, &hdr.BodyLen, &hdr.Opaque, hdr.CAS,
+    &hdr.Status, &hdr.BodyLen, &hdr.Opaque, &hdr.CAS,
   }
 
   for _, field := range hdrFields {

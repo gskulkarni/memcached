@@ -54,7 +54,7 @@ func (c *GetCmd) Decode(r io.Reader) error {
   hdr := c.Header
 
   if hdr.ExtrasLen > 0 {
-    err = binary.Read(r, binary.BigEndian, c.Flags)
+    err = binary.Read(r, binary.BigEndian, &c.Flags)
     if err != nil {
       return err
     }
@@ -93,11 +93,11 @@ func (c *SetCmd) Decode(r io.Reader) error {
   hdr := c.Header
 
   if hdr.ExtrasLen > 0 {
-    err = binary.Read(r, binary.BigEndian, c.Flags)
+    err = binary.Read(r, binary.BigEndian, &c.Flags)
     if err != nil {
       return err
     }
-    err = binary.Read(r, binary.BigEndian, c.Expiration)
+    err = binary.Read(r, binary.BigEndian, &c.Expiration)
     if err != nil {
       return err
     }
@@ -125,7 +125,7 @@ func (c *SetCmd) Decode(r io.Reader) error {
 func (hdr *RequestHeader) decode(r io.Reader) error {
   hdrFields := []interface{}{
     &hdr.Magic, &hdr.Opcode, &hdr.KeyLen, &hdr.ExtrasLen, &hdr.DataType,
-    &hdr.Reserved, &hdr.BodyLen, &hdr.Opaque, hdr.CAS,
+    &hdr.Reserved, &hdr.BodyLen, &hdr.Opaque, &hdr.CAS,
   }
 
   for _, field := range hdrFields {
@@ -170,6 +170,7 @@ func (cmd *GetCmd) Execute() (*Response, error) {
   } else {
     rsp.Value = item.value
     rsp.Flags = item.flags
+    rsp.Header.CAS = item.cas
   }
   // glog.Infof("got get command:%+v for key: %s and found value: %v", req, key, v)
   rsp.fillHeader(cmd.Header)
@@ -202,12 +203,10 @@ func (cmd *SetCmd) Execute() (*Response, error) {
   s := cmd.s
   rsp := &Response{}
 
-  // if !validateSetCommand(req) {
-  //   // not a valid command
-  // }
   key := string(cmd.Key)
   value := cmd.Value
-  glog.Infof("got set command for key: %s value: %v", key, value)
+  glog.Infof("got set command for key: %s value: %v header:%+v",
+    key, value, cmd.Header)
   err := s.ds.Set(key, value, cmd.Flags, cmd.Expiration, cmd.Header.CAS)
   if err != nil {
     glog.Errorf("error setting key value :: %v", err)
