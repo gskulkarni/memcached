@@ -84,3 +84,16 @@ func (rsp *Response) encode(w io.Writer) error {
   }
   return nil
 }
+
+func (rsp *Response) fillHeader(reqHdr *RequestHeader) error {
+  hdr := &rsp.Header
+  hdr.Magic = 0x81
+  hdr.Opaque = reqHdr.Opaque
+  hdr.Opcode = reqHdr.Opcode
+  hdr.KeyLen = uint16(len(rsp.Key))
+  hdr.ExtrasLen = uint8(len(rsp.Extras))
+  hdr.BodyLen = uint32(len(rsp.Extras)) +
+    uint32(len(rsp.Key)) + uint32(len(rsp.Value))
+
+  return nil
+}

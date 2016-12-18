@@ -2,6 +2,7 @@ package server
 
 import (
   "encoding/binary"
+  "github.com/golang/glog"
   "io"
 )
 
@@ -133,4 +134,85 @@ func (hdr *RequestHeader) decode(r io.Reader) error {
     }
   }
   return nil
+}
+
+func (cmd *GetCmd) IsValid() (bool, string) {
+  hdr := cmd.Header
+
+  if hdr.ExtrasLen > 0 {
+    return false, "extras fields empty"
+  }
+
+  if hdr.KeyLen <= 0 {
+    return false, "key len 0"
+  }
+
+  if len(cmd.Key) == 0 {
+    return false, "missing key"
+  }
+
+  if len(cmd.Value) > 0 {
+    return false, "non-empty value"
+  }
+
+  return true, ""
+}
+
+func (cmd *GetCmd) Execute() (*Response, error) {
+  s := cmd.s
+  rsp := &Response{}
+  // if !validateGetCommand(req) {
+  //   // not a valid command
+  // }
+  key := string(cmd.Key)
+  v, found := s.ds.Get(key)
+  if !found {
+    glog.V(2).Infof("key: %s not found", key)
+  }
+  // glog.Infof("got get command:%+v for key: %s and found value: %v", req, key, v)
+  rsp.Value = v
+  rsp.Extras = make([]byte, 4)
+  rsp.fillHeader(cmd.Header)
+  return rsp, nil
+}
+
+func (cmd *SetCmd) IsValid() (bool, string) {
+  hdr := cmd.Header
+
+  if hdr.ExtrasLen == 0 {
+    return false, "missing extra length"
+  }
+
+  if hdr.KeyLen <= 0 {
+    return false, "0 key length"
+  }
+
+  if len(cmd.Key) == 0 {
+    return false, "missing key"
+  }
+
+  if len(cmd.Value) == 0 {
+    return false, "missing value"
+  }
+
+  return true, ""
+}
+
+func (cmd *SetCmd) Execute() (*Response, error) {
+  s := cmd.s
+  rsp := &Response{}
+
+  // if !validateSetCommand(req) {
+  //   // not a valid command
+  // }
+  key := string(cmd.Key)
+  value := cmd.Value
+  glog.Infof("got set command for key: %s value: %v", key, value)
+  err := s.ds.Set(key, value)
+  if err != nil {
+    glog.Errorf("error setting key value :: %v", err)
+    return nil, err
+  }
+  rsp.fillHeader(cmd.Header)
+  return rsp, nil
 }
