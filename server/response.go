@@ -32,7 +32,7 @@ type ResponseHeader struct {
 
 type Response struct {
   Header ResponseHeader
-  Extras []byte
+  Flags  uint32
   Key    []byte
   Value  []byte
 }
@@ -61,8 +61,8 @@ func (rsp *Response) encode(w io.Writer) error {
     return err
   }
 
-  if len(rsp.Extras) > 0 {
-    err = binary.Write(w, binary.BigEndian, rsp.Extras)
+  if hdr.ExtrasLen > 0 {
+    err = binary.Write(w, binary.BigEndian, rsp.Flags)
     if err != nil {
       return err
     }
@@ -91,8 +91,10 @@ func (rsp *Response) fillHeader(reqHdr *RequestHeader) error {
   hdr.Opaque = reqHdr.Opaque
   hdr.Opcode = reqHdr.Opcode
   hdr.KeyLen = uint16(len(rsp.Key))
-  hdr.ExtrasLen = uint8(len(rsp.Extras))
-  hdr.BodyLen = uint32(len(rsp.Extras)) +
+  if hdr.Opcode == CmdGet {
+    hdr.ExtrasLen = 4
+  }
+  hdr.BodyLen = uint32(hdr.ExtrasLen) +
     uint32(len(rsp.Key)) + uint32(len(rsp.Value))
 
   return nil

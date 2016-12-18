@@ -161,17 +161,14 @@ func (cmd *GetCmd) IsValid() (bool, string) {
 func (cmd *GetCmd) Execute() (*Response, error) {
   s := cmd.s
   rsp := &Response{}
-  // if !validateGetCommand(req) {
-  //   // not a valid command
-  // }
   key := string(cmd.Key)
-  v, found := s.ds.Get(key)
+  item, found := s.ds.Get(key)
   if !found {
     glog.V(2).Infof("key: %s not found", key)
   }
   // glog.Infof("got get command:%+v for key: %s and found value: %v", req, key, v)
-  rsp.Value = v
-  rsp.Extras = make([]byte, 4)
+  rsp.Value = item.value
+  rsp.Flags = item.flags
   rsp.fillHeader(cmd.Header)
   return rsp, nil
 }
@@ -208,7 +205,7 @@ func (cmd *SetCmd) Execute() (*Response, error) {
   key := string(cmd.Key)
   value := cmd.Value
   glog.Infof("got set command for key: %s value: %v", key, value)
-  err := s.ds.Set(key, value)
+  err := s.ds.Set(key, value, cmd.Flags, cmd.Expiration, cmd.Header.CAS)
   if err != nil {
     glog.Errorf("error setting key value :: %v", err)
     return nil, err

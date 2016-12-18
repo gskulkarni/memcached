@@ -87,6 +87,13 @@ func (s *Server) getCommand(hdr *RequestHeader) (cmd Command, err error) {
 // client connection needs to be terminated. Any type of IO error during the
 // command handling leads to connection close.
 func (s *Server) handleCommand(rw io.ReadWriter) (*Response, error) {
+
+  defer func() {
+    if err := recover(); err != nil {
+      glog.Errorf("recovered from panic ")
+    }
+  }()
+
   hdr := &RequestHeader{}
   // read the request header
   err := hdr.decode(rw)

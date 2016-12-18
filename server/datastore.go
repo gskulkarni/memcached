@@ -6,34 +6,43 @@ import (
 
 type item struct {
   value  []byte
-  expiry uint64
+  expiry uint32
   flags  uint32
   cas    uint64
 }
 
 type dataStore struct {
   mu sync.RWMutex
-  kv map[string][]byte
+  kv map[string]*item
 }
 
 func newDataStore() *dataStore {
   return &dataStore{
-    kv: make(map[string][]byte),
+    kv: make(map[string]*item),
   }
 }
 
-func (ds *dataStore) Get(k string) ([]byte, bool) {
+func (ds *dataStore) Get(k string) (*item, bool) {
   ds.mu.RLock()
   defer ds.mu.RUnlock()
 
-  v, found := ds.kv[k]
-  return v, found
+  // TODO(sunil): implement expiry
+  item, found := ds.kv[k]
+  return item, found
 }
 
-func (ds *dataStore) Set(k string, v []byte) error {
+func (ds *dataStore) Set(k string, v []byte,
+  flags uint32, expiry uint32, cas uint64) error {
   ds.mu.Lock()
   defer ds.mu.Unlock()
 
-  ds.kv[k] = v
+  // TODO(sunil): implement cas
+  // implement other field as optional params
+  ds.kv[k] = &item{
+    value:  v,
+    flags:  flags,
+    expiry: expiry,
+    cas:    cas,
+  }
   return nil
 }
