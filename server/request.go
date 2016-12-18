@@ -48,5 +48,9 @@ const (
 type Command interface {
   Decode(io.Reader) error
   IsValid() (bool, string)
-  Execute() (*Response, error)
+  Execute() (CommandRspWriter, error)
+}
+
+type CommandRspWriter interface {
+  Write(io.Writer) error
 }

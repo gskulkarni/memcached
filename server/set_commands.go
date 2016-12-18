@@ -71,9 +71,9 @@ func (cmd *SetCmd) IsValid() (bool, string) {
   return true, ""
 }
 
-func (cmd *SetCmd) Execute() (*Response, error) {
+func (cmd *SetCmd) Execute() (CommandRspWriter, error) {
   s := cmd.s
-  rsp := &Response{}
+  rsp := &CmdSetResp{}
 
   key := string(cmd.Key)
   value := cmd.Value
@@ -86,4 +86,14 @@ func (cmd *SetCmd) Execute() (*Response, error) {
   }
   rsp.fillHeader(cmd.Header)
   return rsp, nil
+}
+
+func (rsp *CmdSetResp) fillHeader(reqHdr *RequestHeader) {
+  hdr := &rsp.Header
+  hdr.Magic = MagicCodeResponse
+  hdr.Opaque = reqHdr.Opaque
+  hdr.Opcode = reqHdr.Opcode
+  hdr.KeyLen = uint16(len(rsp.Key))
+  hdr.BodyLen = uint32(hdr.ExtrasLen) +
+    uint32(len(rsp.Key)) + uint32(len(rsp.Value))
 }

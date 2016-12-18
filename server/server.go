@@ -59,7 +59,13 @@ func (s *Server) serveConnection(conn net.Conn) {
 
   // start the request handler loop for this connection
   for {
-    _, err := s.handleCommand(conn)
+    rsp, err := s.handleCommand(conn)
+    if err != nil {
+      conn.Close()
+      return
+    }
+    // write response to the client
+    err = rsp.Write(conn)
     if err != nil {
       conn.Close()
       return
@@ -70,7 +76,7 @@ func (s *Server) serveConnection(conn net.Conn) {
 // handleCommand serves given command. Error values indicate if the associated
 // client connection needs to be terminated. Any type of IO error during the
 // command handling leads to connection close.
-func (s *Server) handleCommand(rw io.ReadWriter) (*Response, error) {
+func (s *Server) handleCommand(rw io.ReadWriter) (CommandRspWriter, error) {
 
   defer func() {
     if err := recover(); err != nil {
@@ -101,17 +107,7 @@ func (s *Server) handleCommand(rw io.ReadWriter) (*Response, error) {
     return nil, fmt.Errorf("invalid request :: %s", reason)
   }
 
-  rsp, err := cmd.Execute()
-  if err != nil {
-    return nil, err
-  }
-
-  // write response to the client
-  err = rsp.encode(rw)
-  if err != nil {
-    return nil, err
-  }
-  return rsp, err
+  return cmd.Execute()
 }
 
 func (s *Server) getCommand(hdr *RequestHeader) (cmd Command, err error) {

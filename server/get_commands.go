@@ -66,9 +66,9 @@ func (cmd *GetCmd) IsValid() (bool, string) {
   return true, ""
 }
 
-func (cmd *GetCmd) Execute() (*Response, error) {
+func (cmd *GetCmd) Execute() (CommandRspWriter, error) {
   s := cmd.s
-  rsp := &Response{}
+  rsp := &CmdGetResp{}
   key := string(cmd.Key)
   item, found := s.ds.Get(key)
   if !found {
@@ -83,4 +83,15 @@ func (cmd *GetCmd) Execute() (*Response, error) {
   // glog.Infof("got get command:%+v for key: %s and found value: %v", req, key, v)
   rsp.fillHeader(cmd.Header)
   return rsp, nil
+}
+
+func (rsp *CmdGetResp) fillHeader(reqHdr *RequestHeader) {
+  hdr := &rsp.Header
+  hdr.Magic = MagicCodeResponse
+  hdr.Opaque = reqHdr.Opaque
+  hdr.Opcode = reqHdr.Opcode
+  hdr.KeyLen = uint16(len(rsp.Key))
+  hdr.ExtrasLen = 4
+  hdr.BodyLen = uint32(hdr.ExtrasLen) +
+    uint32(len(rsp.Key)) + uint32(len(rsp.Value))
 }
